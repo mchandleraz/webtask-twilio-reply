@@ -1,0 +1,15 @@
+{
+  "name": "webtask-twilio-reply",
+  "version": "0.0.2",
+  "description": "",
+  "main": "replyHandler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "@mchandleraz",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "twilio": "^3.0.0"
+  }
+}
