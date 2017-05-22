@@ -1,29 +1,44 @@
-var twilio = require('twilio');
-var _ = require('lodash');
+const twilio = require('twilio');
+const _ = require('lodash');
 
-module.exports = function(context, request, response) {
-  var incomingMessage = _.get(context, 'body.Body', '');
-  var SID = _.get(context, 'secrets.SID');
-  var TOKEN = _.get(context, 'secrets.TOKEN');
-  var FROM = _.get(context, 'secrets.FROM');
+const handleReply = (context, request, response) => {
+  const SID   = _.get(context, 'secrets.SID');
+  const TOKEN = _.get(context, 'secrets.TOKEN');
+  const FROM  = _.get(context, 'secrets.FROM');
 
-  var client = new twilio(SID, TOKEN);
-  var responseBody;
-
-  switch (incomingMessage.toLowerCase()) {
-    case 'done':
-      responseBody = 'got done keyword';
-      break;
-    default:
-      responseBody = 'received no keywords';
+  // try-catch in case user didn't supply SID/TOKEN
+  try {
+    const client = new twilio(SID, TOKEN);
+  } catch (e) {
+    response.end(e.toString())
   }
-
+  
   client.messages.create({
-    body: responseBody,
+    body: getResponseBody(_.get(context, 'body.Body', '')),
     to: context.body.From,
     from: FROM
   })
-  .then(function(message) {
+  .then((message) => {
     response.end(message.toString());
+  })
+  .catch((error) => {
+    response.end(error.toString());
   });
 }
+
+const getResponseBody = (responseBody) => {
+  switch (responseBody.toLowerCase()) {
+    case 'done':
+      return `You did it!`;
+    case 'start':
+    case 'stop':
+      // just bail, because the start/stop behavior
+      // is handled by twilio before we get here
+      // and we don't want to send a message in that case
+      return;
+    default:
+      return 'Did you complete your task? If so, respond with "done".'
+  }
+}
+
+module.exports = handleReply;
