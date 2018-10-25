@@ -6,7 +6,14 @@ const handleReply = (context, request, response) => {
   const TOKEN = _.get(context, 'secrets.TOKEN');
   const FROM  = _.get(context, 'secrets.FROM');
 
-  // try-catch in case user didn't supply SID/TOKEN
+  if (!SID) {
+    response.end('Missing SID')
+  }
+
+  if (!TOKEN) {
+    response.end('Missing TOKEN')
+  }
+
   try {
     const client = new twilio(SID, TOKEN);
   } catch (e) {
@@ -14,7 +21,7 @@ const handleReply = (context, request, response) => {
   }
   
   client.messages.create({
-    body: getResponseBody(_.get(context, 'body.Body', '')),
+    body: 'response text',
     to: context.body.From,
     from: FROM
   })
@@ -24,21 +31,6 @@ const handleReply = (context, request, response) => {
   .catch((error) => {
     response.end(error.toString());
   });
-}
-
-const getResponseBody = (responseBody) => {
-  switch (responseBody.toLowerCase()) {
-    case 'done':
-      return `You did it!`;
-    case 'start':
-    case 'stop':
-      // just bail, because the start/stop behavior
-      // is handled by twilio before we get here
-      // and we don't want to send a message in that case
-      return;
-    default:
-      return 'Did you complete your task? If so, respond with "done".'
-  }
 }
 
 module.exports = handleReply;
